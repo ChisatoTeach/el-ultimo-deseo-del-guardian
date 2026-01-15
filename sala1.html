@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sala del Deseo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="container">
+  <h2>🗝️ Sala del Deseo</h2>
+  <p>Completa la frase correctamente:</p>
+
+  <p><em>El guardián quiere que tú ____ el secreto.</em></p>
+
+  <select id="answer">
+    <option value="">--elige--</option>
+    <option value="sabes">sabes</option>
+    <option value="sepas">sepas</option>
+  </select>
+
+  <button onclick="checkAnswer('sepas')">Comprobar</button>
+  <button onclick="showHint()">💡 Pista</button>
+
+  <p id="feedback"></p>
+  <p>⭐ Puntos: <span id="score"></span></p>
+</div>
+
+<script src="js/game.js"></script>
+<script>
+  loadScore();
+</script>
+</body>
+</html>

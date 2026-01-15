@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>El último deseo del guardián</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 El último deseo del guardián</h1>
+    <p>
+      Has entrado en el santuario del idioma.  
+      El Guardián está a punto de desaparecer y solo quienes dominen el
+      <strong>subjuntivo</strong> podrán cumplir su último deseo.
+    </p>
+    <button onclick="startGame()">Comenzar</button>
+  </div>
+
+  <script>
+    function startGame() {
+      localStorage.setItem("score", 0);
+      localStorage.setItem("usedHints", 0);
+      window.location.href = "sala1.html";
+    }
+  </script>
+</body>
+</html>
