@@ -1,27 +1,689 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>El último deseo del guardián</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🔐 El último deseo del guardián — Escape Room ELE</title>
+  <style>
+    /* ===== Estética: misteriosa, legible, funcional ===== */
+    :root{
+      --bg:#0f0f0f;
+      --panel:#121212;
+      --accent:#c9a66b;
+      --muted:#bdbdbd;
+      --good:#2ecc71;
+      --bad:#e74c3c;
+      --glass: rgba(255,255,255,0.03);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    html,body{height:100%;margin:0;background:
+      radial-gradient(ellipse at top left, rgba(201,166,107,0.06), transparent 20%),
+      linear-gradient(180deg,#071017 0%,var(--bg) 100%);
+      color:var(--muted);
+    }
+    .container{max-width:1100px;margin:24px auto;padding:24px;background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55));border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,0.6);border:1px solid rgba(201,166,107,0.06)}
+    header{display:flex;gap:16px;align-items:center}
+    h1{color:var(--accent);margin:0;font-size:1.6rem}
+    .subtitle{font-size:0.95rem;color:var(--muted)}
+    nav{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+    .room-btn{background:var(--glass);border:1px solid rgba(201,166,107,0.08);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .room-btn.active{background:linear-gradient(90deg, rgba(201,166,107,0.12), rgba(201,166,107,0.04));color:#fff}
+    .status{display:flex;gap:12px;margin-left:auto;align-items:center}
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    .score{font-weight:700;color:var(--accent);font-size:1.1rem}
+    .progress{font-size:0.9rem;color:var(--muted)}
+    main{margin-top:18px;display:flex;gap:20px}
+    section.room{flex:1;min-height:420px;padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.5));border:1px solid rgba(255,255,255,0.02);display:none}
+    section.room.active{display:block}
+    .room h2{color:var(--accent);margin-top:0}
+    .hint-row{display:flex;gap:8px;align-items:center;margin-top:6px}
+    .hint-btn{background:#222;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
+    .hint-text{margin-top:8px;color:#f3e7d5;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;border:1px solid rgba(201,166,107,0.06)}
+    .question{margin-top:14px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+    label{display:block;margin-bottom:6px;color:#e9dfc8}
+    input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);background:#0b0b0b;color:var(--muted)}
+    .btn{background:var(--accent);color:#08120f;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;margin-top:8px}
+    .feedback{margin-top:8px;padding:10px;border-radius:8px}
+    .correct{background:linear-gradient(90deg, rgba(46,204,113,0.12), rgba(46,204,113,0.04));border:1px solid rgba(46,204,113,0.12);color:var(--good)}
+    .incorrect{background:linear-gradient(90deg, rgba(231,76,60,0.08), rgba(231,76,60,0.03));border:1px solid rgba(231,76,60,0.08);color:var(--bad)}
+    .choices{display:flex;flex-direction:column;gap:8px}
+    .choice{background:#0d1111;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+    .drag-area{display:flex;gap:8px;flex-wrap:wrap}
+    .draggable{background:#1a1510;padding:8px;border-radius:6px;border:1px dashed rgba(201,166,107,0.12);cursor:grab;color:var(--muted)}
+    .drop-slot{min-width:120px;min-height:40px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.04);padding:6px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+    footer{margin-top:18px;color:var(--muted);font-size:0.9rem;display:flex;gap:12px;justify-content:space-between;align-items:center}
+    .final-panel{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.45));border:1px solid rgba(255,255,255,0.02)}
+    .teacher-notes{margin-top:18px;background:#081217;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+    small.muted{color:#888}
+    /* Responsive */
+    @media(max-width:900px){main{flex-direction:column}}
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔐 El último deseo del guardián</h1>
-    <p>
-      Has entrado en el santuario del idioma.  
-      El Guardián está a punto de desaparecer y solo quienes dominen el
-      <strong>subjuntivo</strong> podrán cumplir su último deseo.
-    </p>
-    <button onclick="startGame()">Comenzar</button>
+    <header>
+      <div>
+        <h1>🔐 El último deseo del guardián</h1>
+        <div class="subtitle">Entra en el santuario y demuestra que dominas el subjuntivo presente. Nivel recomendado: B1–B2</div>
+      </div>
+
+      <div class="status" style="margin-left:auto">
+        <div class="panel">
+          Puntuación: <span id="score" class="score">0</span>
+        </div>
+        <div class="panel">
+          Progreso: <span id="progress" class="progress">0/5 habitaciones</span>
+        </div>
+      </div>
+    </header>
+
+    <nav>
+      <!-- Navegación entre salas -->
+      <button class="room-btn active" data-room="deseo">Sala del Deseo</button>
+      <button class="room-btn" data-room="duda">Sala de la Duda</button>
+      <button class="room-btn" data-room="emocion">Sala de la Emoción</button>
+      <button class="room-btn" data-room="finalidad">Sala de la Finalidad</button>
+      <button class="room-btn" data-room="sala-final">Sala Final</button>
+    </nav>
+
+    <main>
+      <!-- Sala 1: Verbos de deseo e influencia -->
+      <section id="deseo" class="room active">
+        <h2>Sala del Deseo — Verbos de deseo e influencia</h2>
+        <p>El Guardián pide que muestres frases con verbos de influencia y deseo. Usa el subjuntivo presente cuando corresponda.</p>
+
+        <div class="hint-row">
+          <button class="hint-btn" data-room="deseo" data-hint="1">Pista 1</button>
+          <button class="hint-btn" data-room="deseo" data-hint="2">Pista 2</button>
+          <div style="margin-left:auto"><small class="muted">Pistas disponibles: 2</small></div>
+        </div>
+
+        <!-- Pregunta 1: completar -->
+        <div class="question" data-qid="d1">
+          <label>1) Completa: "Espero que ella _____ (venir) a la ceremonia."</label>
+          <input type="text" id="d1-input" placeholder="Escribe la forma correcta"/>
+          <button class="btn" data-action="submit" data-room="deseo" data-qid="d1">Comprobar</button>
+          <div class="feedback" id="d1-feedback" aria-live="polite"></div>
+        </div>
+
+        <!-- Pregunta 2: elección múltiple -->
+        <div class="question" data-qid="d2">
+          <label>2) ¿Cuál es correcta con sentido de influencia?</label>
+          <div class="choices" id="d2-choices">
+            <div class="choice" data-value="1">Te recomiendo que vas temprano.</div>
+            <div class="choice" data-value="2">Te recomiendo que vayas temprano.</div>
+            <div class="choice" data-value="3">Te recomiendo que irás temprano.</div>
+          </div>
+          <div class="feedback" id="d2-feedback"></div>
+        </div>
+
+        <!-- Pregunta 3: arrastrar y soltar (palabras) -->
+        <div class="question" data-qid="d3">
+          <label>3) Arrastra las palabras al espacio para formar una frase correcta (subjuntivo presente).</label>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div class="drag-area" id="d3-pool" style="flex:1">
+              <div class="draggable" draggable="true" data-word="espero">espero</div>
+              <div class="draggable" draggable="true" data-word="que">que</div>
+              <div class="draggable" draggable="true" data-word="tú">tú</div>
+              <div class="draggable" draggable="true" data-word="llegues">llegues</div>
+              <div class="draggable" draggable="true" data-word="pronto">pronto</div>
+            </div>
+            <div style="flex:1">
+              <div class="drop-slot" id="d3-slot">Suelta las palabras aquí</div>
+              <button class="btn" data-action="submit" data-room="deseo" data-qid="d3" style="margin-top:8px">Comprobar</button>
+              <div class="feedback" id="d3-feedback"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sala 2: Duda, negación e incertidumbre -->
+      <section id="duda" class="room">
+        <h2>Sala de la Duda — Duda, negación e incertidumbre</h2>
+        <p>El Guardián pregunta cuándo usamos subjuntivo con expresiones de duda o negación.</p>
+        <div class="hint-row">
+          <button class="hint-btn" data-room="duda" data-hint="1">Pista 1</button>
+          <button class="hint-btn" data-room="duda" data-hint="2">Pista 2</button>
+        </div>
+
+        <!-- Pregunta 1: completar -->
+        <div class="question" data-qid="u1">
+          <label>1) Completa: "No creo que ellos _____ (tener) la respuesta."</label>
+          <input type="text" id="u1-input" placeholder="Escribe la forma correcta"/>
+          <button class="btn" data-action="submit" data-room="duda" data-qid="u1">Comprobar</button>
+          <div class="feedback" id="u1-feedback"></div>
+        </div>
+
+        <!-- Pregunta 2: elección múltiple con explicación -->
+        <div class="question" data-qid="u2">
+          <label>2) Señala la frase que expresa certeza (no subjuntivo).</label>
+          <div class="choices" id="u2-choices">
+            <div class="choice" data-value="1">Dudo que María venga.</div>
+            <div class="choice" data-value="2">Es obvio que María viene.</div>
+            <div class="choice" data-value="3">No estoy seguro de que María viene.</div>
+          </div>
+          <div class="feedback" id="u2-feedback"></div>
+        </div>
+
+        <!-- Pregunta 3: descifrar mensaje (código lingüístico) -->
+        <div class="question" data-qid="u3">
+          <label>3) Descifra: cada palabra perdió una vocal. Reconstruye y usa subjuntivo:
+          "N cr o q__e__l__s t_ngn l s rsps" →</label>
+          <input type="text" id="u3-input" placeholder="Escribe la frase completa"/>
+          <button class="btn" data-action="submit" data-room="duda" data-qid="u3">Comprobar</button>
+          <div class="feedback" id="u3-feedback"></div>
+        </div>
+      </section>
+
+      <!-- Sala 3: Emoción -->
+      <section id="emocion" class="room">
+        <h2>Sala de la Emoción — Sentimientos y reacciones</h2>
+        <p>Usa el subjuntivo con expresiones que muestran emociones o reacciones.</p>
+        <div class="hint-row">
+          <button class="hint-btn" data-room="emocion" data-hint="1">Pista 1</button>
+          <button class="hint-btn" data-room="emocion" data-hint="2">Pista 2</button>
+        </div>
+
+        <!-- Pregunta 1: elección múltiple -->
+        <div class="question" data-qid="e1">
+          <label>1) ¿Cuál completa mejor: "Me alegra que _____ (tú / aprobar) el examen"?</label>
+          <div class="choices" id="e1-choices">
+            <div class="choice" data-value="1">tú apruebas</div>
+            <div class="choice" data-value="2">tú apruebes</div>
+            <div class="choice" data-value="3">tú aprobarás</div>
+          </div>
+          <div class="feedback" id="e1-feedback"></div>
+        </div>
+
+        <!-- Pregunta 2: completar -->
+        <div class="question" data-qid="e2">
+          <label>2) Completa: "Siento que no _____ (poder) venir mañana."</label>
+          <input type="text" id="e2-input" placeholder="Escribe la forma correcta"/>
+          <button class="btn" data-action="submit" data-room="emocion" data-qid="e2">Comprobar</button>
+          <div class="feedback" id="e2-feedback"></div>
+        </div>
+
+        <!-- Pregunta 3: código lingüístico: reordena -->
+        <div class="question" data-qid="e3">
+          <label>3) Ordena las frases para formar una oración correcta con subjuntivo:
+          [que / me preocupa / no / llegues / tarde]</label>
+          <div class="choices" id="e3-choices">
+            <div class="choice" data-value="1">Me preocupa que no llegues tarde.</div>
+            <div class="choice" data-value="2">Que me preocupa no llegues tarde.</div>
+            <div class="choice" data-value="3">No me preocupa que llegues tarde.</div>
+          </div>
+          <div class="feedback" id="e3-feedback"></div>
+        </div>
+      </section>
+
+      <!-- Sala 4: Finalidad -->
+      <section id="finalidad" class="room">
+        <h2>Sala de la Finalidad — "para que / a fin de que"</h2>
+        <p>Demuestra que sabes usar oraciones de finalidad que requieren subjuntivo.</p>
+        <div class="hint-row">
+          <button class="hint-btn" data-room="finalidad" data-hint="1">Pista 1</button>
+          <button class="hint-btn" data-room="finalidad" data-hint="2">Pista 2</button>
+        </div>
+
+        <!-- Pregunta 1: completar -->
+        <div class="question" data-qid="f1">
+          <label>1) Completa: "Traje el mapa para que tú _____ (saber) el camino."</label>
+          <input type="text" id="f1-input" placeholder="Escribe la forma correcta"/>
+          <button class="btn" data-action="submit" data-room="finalidad" data-qid="f1">Comprobar</button>
+          <div class="feedback" id="f1-feedback"></div>
+        </div>
+
+        <!-- Pregunta 2: elección múltiple -->
+        <div class="question" data-qid="f2">
+          <label>2) Señala la opción que explica el uso de subjuntivo en la finalidad:</label>
+          <div class="choices" id="f2-choices">
+            <div class="choice" data-value="1">Porque indica una causa.</div>
+            <div class="choice" data-value="2">Porque expresa el propósito o la intención.</div>
+            <div class="choice" data-value="3">Porque indica una consecuencia.</div>
+          </div>
+          <div class="feedback" id="f2-feedback"></div>
+        </div>
+
+        <!-- Pregunta 3: código: elige la conjunción correcta -->
+        <div class="question" data-qid="f3">
+          <label>3) Elige la conjunción adecuada: "_______ salvar la biblioteca, necesitamos organizar una campaña."</label>
+          <div class="choices" id="f3-choices">
+            <div class="choice" data-value="1">Para que</div>
+            <div class="choice" data-value="2">Porque</div>
+            <div class="choice" data-value="3">Aunque</div>
+          </div>
+          <div class="feedback" id="f3-feedback"></div>
+        </div>
+      </section>
+
+      <!-- Sala Final: prueba integradora -->
+      <section id="sala-final" class="room">
+        <h2>Sala Final — El Último Deseo del Guardián</h2>
+        <p>Una prueba integradora: combina deseo, duda, emoción y finalidad. Debes usar subjuntivo presente cuando corresponda.</p>
+        <div class="hint-row">
+          <button class="hint-btn" data-room="sala-final" data-hint="1">Pista 1</button>
+          <button class="hint-btn" data-room="sala-final" data-hint="2">Pista 2</button>
+        </div>
+
+        <!-- Pregunta 1: mini-historia completar varias formas -->
+        <div class="question" data-qid="sf1">
+          <label>1) Completa la mini-historia (usa subjuntivo donde corresponda):
+          "El Guardián desea que los aprendices ______ (comprender) el valor de las palabras. Él duda que todos ______ (estar) preparados, pero espera que tú _____ (poder) ayudar." </label>
+          <input type="text" id="sf1-input" placeholder="Escribe las tres formas separadas por comas: comprender, estar, poder"/>
+          <button class="btn" data-action="submit" data-room="sala-final" data-qid="sf1">Comprobar</button>
+          <div class="feedback" id="sf1-feedback"></div>
+        </div>
+
+        <!-- Pregunta 2: elección múltiple integradora -->
+        <div class="question" data-qid="sf2">
+          <label>2) ¿Cuál resume mejor cuándo usar subjuntivo en las cláusulas de estas oraciones?</label>
+          <div class="choices" id="sf2-choices">
+            <div class="choice" data-value="1">Cuando hay deseo, duda, emoción o finalidad que afecta a otra acción.</div>
+            <div class="choice" data-value="2">Siempre, en todas las cláusulas subordinadas.</div>
+            <div class="choice" data-value="3">Solo con verbos en pasado.</div>
+          </div>
+          <div class="feedback" id="sf2-feedback"></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <button id="finish-btn" class="btn">Intentar escapar</button>
+          <div class="feedback" id="final-feedback" style="margin-top:10px"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="final-panel" id="final-panel">
+        <strong>Condición de victoria:</strong> Completa las 5 habitaciones y consigue al menos 70 puntos.
+      </div>
+      <div>
+        <button id="restart" class="btn" style="background:#444;color:#fff">Reiniciar juego</button>
+      </div>
+    </footer>
+
+    <!-- NOTAS PARA EL PROFESOR: editable y visible dentro del mismo archivo -->
+    <details class="teacher-notes" open>
+      <summary style="cursor:pointer;color:var(--accent)">📚 Sugerencias para el profesor (abrir/cerrar)</summary>
+      <div style="margin-top:8px;color:var(--muted)">
+        <h3 style="color:var(--accent)">Uso en clase</h3>
+        <ul>
+          <li>Duración recomendada: 30–60 min.</li>
+          <li>Modalidad presencial: proyecte la página y divida a los estudiantes en grupos. Cada grupo resuelve una sala y luego rota.</li>
+          <li>Modalidad virtual: comparta la URL (archivo) y pida que trabajen individualmente o en parejas en salas separadas mediante pestañas o compartiendo pantalla.</li>
+          <li>Trabajo individual: los estudiantes completan todas las salas y generan la puntuación final.</li>
+        </ul>
+
+        <h3 style="color:var(--accent)">Adaptación</h3>
+        <ul>
+          <li>Para niveles B1 recortar preguntas o ofrecer vocabulario de apoyo; para B2 añadir más elementos contextuales.</li>
+          <li>Los textos y explicaciones están marcados en comentarios dentro del HTML para facilitar su edición.</li>
+        </ul>
+
+        <h3 style="color:var(--accent)">Evaluación</h3>
+        <ul>
+          <li>Use la puntuación final como indicador formativo. Comente las explicaciones de errores que aparecen tras cada intento.</li>
+        </ul>
+
+        <h3 style="color:var(--accent)">Personalización rápida</h3>
+        <p>Edite textos de las preguntas en los elementos con clase <code>question</code>. Para cambiar pistas, busque las funciones JavaScript al final del archivo (variable <code>HINTS</code>).</p>
+      </div>
+    </details>
+
   </div>
 
   <script>
-    function startGame() {
-      localStorage.setItem("score", 0);
-      localStorage.setItem("usedHints", 0);
-      window.location.href = "sala1.html";
+    /*************************************************************************
+     * Juego: lógica de puntuación, intentos, pistas, feedback y navegación
+     * Comentarios para el docente: las preguntas están identificadas por qid.
+     * Cambie textos o reglas modificando las estructuras en este script.
+     *************************************************************************/
+
+    // Estado del juego
+    const STATE = {
+      score: 0,
+      roomsCompleted: { deseo:false, duda:false, emocion:false, finalidad:false, 'sala-final':false },
+      // por pregunta: { attempts: 0, correct: false }
+      questions: {},
+      hintsUsed: { deseo:0, duda:0, emocion:0, finalidad:0, 'sala-final':0 }
+    };
+
+    // Reglas y datos (explicaciones y respuestas)
+    const DATA = {
+      // respuestas esperadas (normalizadas en minúsculas, sin tildes para permitir variaciones)
+      answers: {
+        d1: "venga",
+        d2: "2",
+        d3: "espero que tú llegues pronto", // for drag-and-drop check
+        u1: "tengan",
+        u2: "2",
+        u3: "no creo que ellos tengan la respuesta",
+        e1: "2",
+        e2: "pueda",
+        e3: "1",
+        f1: "sepas",
+        f2: "2",
+        f3: "1",
+        sf1: ["comprenda","estén","puedas"], // three forms, accept ñ variations (but use plain)
+        sf2: "1"
+      },
+      explanations: {
+        // breve explicación para feedback en caso de error
+        d1: "Con verbos de deseo como 'esperar', usamos subjuntivo: 'Espero que ella venga'.",
+        d2: "Tras expresiones de recomendación se usa subjuntivo: 'Te recomiendo que vayas'.",
+        d3: "Frase correcta: 'Espero que tú llegues pronto.' El verbo que marca el subjuntivo es 'esperar'.",
+        u1: "Con expresiones negativas e incertidumbre usamos subjuntivo: 'No creo que ellos tengan...'.",
+        u2: "Frase de certeza no lleva subjuntivo: 'Es obvio que María viene.'",
+        u3: "Reconstrucción completa: 'No creo que ellos tengan la respuesta.'",
+        e1: "Emoción: 'Me alegra que tú apruebes.' (subjuntivo)",
+        e2: "Con sentimientos se usa subjuntivo: 'Siento que no pueda venir mañana.'",
+        e3: "Orden correcto: 'Me preocupa que no llegues tarde.' (subjuntivo en 'llegues')",
+        f1: "Finalidad: después de 'para que' usamos subjuntivo: 'para que tú sepas'.",
+        f2: "La finalidad expresa propósito o intención, por eso se usa subjuntivo.",
+        f3: "Con 'para que' expresamos finalidad y se necesita subjuntivo.",
+        sf1: "En serie: 'desea que los aprendices comprendan' → subj. 'comprendan', 'duda que todos estén', 'espera que tú puedas'.",
+        sf2: "El subjuntivo aparece con deseo, duda, emoción o finalidad que afectan otra acción."
+      },
+      // Pistas por sala (máx 2)
+      HINTS: {
+        deseo: [
+          "Recuerda: después de verbos como 'esperar', 'recomendar', 'pedir' suele usarse subjuntivo.",
+          "Mira el sujeto de la subordinada: si cambia (es diferente del principal), probablemente necesites subjuntivo."
+        ],
+        duda: [
+          "Palabras como 'dudo', 'no creo', 'es posible que' suelen pedir subjuntivo.",
+          "Si una frase expresa certeza (por ejemplo 'es obvio'), no usamos subjuntivo."
+        ],
+        emocion: [
+          "Las expresiones de emoción como 'me alegra', 'siento' se combinan con subjuntivo.",
+          "Fíjate en la reacción: si es una valoración o sentimiento sobre otra acción, usa subjuntivo."
+        ],
+        finalidad: [
+          "Con 'para que' y 'a fin de que' indicamos propósito → subjuntivo en la subordinada.",
+          "Si la conjunción expresa causa (porque), no usarías subjuntivo por finalidad."
+        ],
+        "sala-final": [
+          "Combina lo aprendido: identifica si hay deseo, duda, emoción o finalidad.",
+          "Si la subordinada tiene un sujeto distinto y expresa intención/duda/emoción, usa subjuntivo."
+        ]
+      }
+    };
+
+    // Utilidades
+    function normalize(str){
+      if(!str) return "";
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
     }
+
+    // Actualiza marcador visual
+    function updateUI(){
+      document.getElementById('score').textContent = STATE.score;
+      const completed = Object.values(STATE.roomsCompleted).filter(Boolean).length;
+      document.getElementById('progress').textContent = `${completed}/5 habitaciones`;
+    }
+
+    // Manejo de navegación de salas
+    document.querySelectorAll('.room-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.room-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const room = btn.dataset.room;
+        document.querySelectorAll('section.room').forEach(s=>s.classList.remove('active'));
+        document.getElementById(room).classList.add('active');
+      });
+    });
+
+    // Registro de intentos por pregunta
+    function ensureQuestion(qid){
+      if(!STATE.questions[qid]) STATE.questions[qid] = { attempts:0, correct:false };
+    }
+
+    // Manejo de pistas
+    document.querySelectorAll('.hint-btn').forEach(h=>{
+      h.addEventListener('click', ()=>{
+        const room = h.dataset.room;
+        const which = Number(h.dataset.hint) - 1;
+        const hints = DATA.HINTS[room] || [];
+        if(!hints[which]) return;
+        // Cada sala hasta 2 pistas
+        if(STATE.hintsUsed[room] >= 2){
+          alert("Has usado las 2 pistas disponibles en esta sala.");
+          return;
+        }
+        STATE.hintsUsed[room] += 1;
+        STATE.score -= 3; // penalización por pista
+        updateUI();
+        // mostrar pista en la sala
+        const roomEl = document.getElementById(room);
+        const container = document.createElement('div');
+        container.className = 'hint-text';
+        container.textContent = hints[which];
+        roomEl.querySelector('.hint-row').after(container);
+        setTimeout(()=>container.scrollIntoView({behavior:'smooth'}),200);
+      });
+    });
+
+    // Feedback helper
+    function showFeedback(qid, text, correct){
+      const el = document.getElementById(`${qid}-feedback`);
+      if(!el) return;
+      el.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+      el.textContent = text;
+    }
+
+    // Evaluación de respuestas (comunes)
+    function evaluate(qid, user, room){
+      ensureQuestion(qid);
+      const qstate = STATE.questions[qid];
+      if(qstate.correct){
+        showFeedback(qid, "Ya respondiste correctamente esta pregunta.", true);
+        return;
+      }
+      const expected = DATA.answers[qid];
+      let isCorrect = false;
+      // especialidades para distintos qid
+      if(Array.isArray(expected)){
+        // sf1: three forms separated by commas
+        const parts = user.split(',').map(s=>normalize(s));
+        if(parts.length >= expected.length){
+          isCorrect = expected.every((ans, i)=>normalize(ans) === normalize(parts[i]));
+        }
+      } else {
+        // comparación normal: para múltiples choice codificado por número
+        isCorrect = normalize(user) === normalize(expected);
+      }
+
+      if(isCorrect){
+        qstate.correct = true;
+        // puntos según número de intentos previos (intentos guardan cuántas veces falló antes de responder)
+        const attemptsBefore = qstate.attempts; // 0 si es primer intento
+        let points = 0;
+        if(attemptsBefore === 0) points = 10;
+        else if(attemptsBefore === 1) points = 5;
+        else points = 0;
+        STATE.score += points;
+        showFeedback(qid, `✅ Correcto. +${points} puntos.`, true);
+        updateUI();
+        checkRoomCompletion(room);
+      } else {
+        // respuesta incorrecta
+        qstate.attempts += 1;
+        STATE.score -= 2; // penalización por intento incorrecto
+        showFeedback(qid, `❌ Incorrecto. -2 puntos. ${DATA.explanations[qid] || ''}`, false);
+        updateUI();
+      }
+    }
+
+    // Revisa si todas las preguntas visibles de una sala están correctas para aplicar bonus
+    function checkRoomCompletion(room){
+      const roomEl = document.getElementById(room);
+      const qEls = Array.from(roomEl.querySelectorAll('.question'));
+      const qids = qEls.map(q=>q.dataset.qid);
+      const allCorrect = qids.every(qid => STATE.questions[qid] && STATE.questions[qid].correct);
+      if(allCorrect && !STATE.roomsCompleted[room]){
+        STATE.roomsCompleted[room] = true;
+        // bonus si no se usaron pistas en la sala
+        if(STATE.hintsUsed[room] === 0){
+          STATE.score += 5;
+          // notificar bonus
+          const panel = document.createElement('div');
+          panel.className = 'feedback correct';
+          panel.textContent = `🎉 Bonus: +5 puntos por completar la sala sin usar pistas.`;
+          roomEl.appendChild(panel);
+        } else {
+          const panel = document.createElement('div');
+          panel.className = 'feedback';
+          panel.textContent = `Sala completada. Usaste ${STATE.hintsUsed[room]} pista(s).`;
+          roomEl.appendChild(panel);
+        }
+        updateUI();
+      }
+    }
+
+    // Manejo de envíos de botones (inputs y comprobaciones generales)
+    document.querySelectorAll('button[data-action="submit"]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const qid = btn.dataset.qid;
+        const room = btn.dataset.room;
+        const input = (document.getElementById(qid + '-input') || {}).value || '';
+        evaluate(qid, input, room);
+      });
+    });
+
+    // Elección múltiple: click en .choice
+    document.querySelectorAll('.choice').forEach(choice=>{
+      choice.addEventListener('click', ()=>{
+        // determine parent question id from closest .question
+        const q = choice.closest('.question');
+        const qid = q.dataset.qid;
+        const room = q.closest('.room').id;
+        const val = choice.dataset.value;
+        evaluate(qid, val, room);
+      });
+    });
+
+    // Drag-and-drop para d3
+    let dragged = null;
+    document.querySelectorAll('.draggable').forEach(d=>{
+      d.addEventListener('dragstart', e=>{
+        dragged = d;
+        e.dataTransfer.setData('text/plain', d.dataset.word);
+      });
+    });
+    const slot = document.getElementById('d3-slot');
+    slot.addEventListener('dragover', e=>e.preventDefault());
+    slot.addEventListener('drop', e=>{
+      e.preventDefault();
+      const w = e.dataTransfer.getData('text/plain');
+      // añade palabra al slot
+      if(!slot.dataset.words) slot.dataset.words = '';
+      slot.dataset.words = (slot.dataset.words + ' ' + w).trim();
+      slot.textContent = slot.dataset.words;
+    });
+    // Para permitir borrar el contenido del slot con doble click
+    slot.addEventListener('dblclick', ()=>{ slot.dataset.words=''; slot.textContent='Suelta las palabras aquí'; });
+
+    // Evaluación especial para d3: leer slot content
+    // (el submit del d3 ya usa evaluate: qid=d3)
+    // Nos aseguramos de mapear el contenido al texto esperado.
+    // Cuando se llame evaluate para d3, el valor del input será el texto del slot.
+    // Por eso interceptamos y añadimos un listener en el submit handler: ya está hecho porque input es tomado de #d3-input en otro casos.
+    // Para simplicidad, cuando evaluate recibe qid 'd3', tomará texto desde el slot:
+    const originalEvaluate = evaluate;
+    window.evaluate = function(qid, user, room){
+      if(qid === 'd3'){
+        user = (document.getElementById('d3-slot').dataset.words || '').replace(/\s+/g,' ').trim();
+      }
+      originalEvaluate(qid, user, room);
+    };
+
+    // Reiniciar juego
+    document.getElementById('restart').addEventListener('click', ()=>{
+      if(!confirm("¿Reiniciar el juego? Se restablecerá la puntuación y los intentos.")) return;
+      // reiniciar estado
+      STATE.score = 0;
+      STATE.roomsCompleted = { deseo:false, duda:false, emocion:false, finalidad:false, 'sala-final':false };
+      STATE.questions = {};
+      STATE.hintsUsed = { deseo:0, duda:0, emocion:0, finalidad:0, 'sala-final':0 };
+      // limpiar UI (feedbacks, slots, hints, inputs)
+      document.querySelectorAll('.feedback').forEach(f=>f.textContent='');
+      document.querySelectorAll('input[type="text"]').forEach(i=>i.value='');
+      document.getElementById('d3-slot').dataset.words='';
+      document.getElementById('d3-slot').textContent='Suelta las palabras aquí';
+      document.querySelectorAll('.hint-text').forEach(h=>h.remove());
+      updateUI();
+    });
+
+    // Listener para finish (intenta escapar)
+    document.getElementById('finish-btn').addEventListener('click', ()=>{
+      const allRoomsDone = Object.values(STATE.roomsCompleted).every(v=>v);
+      let msg = '';
+      if(!allRoomsDone){
+        msg = "Aún no has completado todas las habitaciones.";
+        document.getElementById('final-feedback').className = 'feedback incorrect';
+        document.getElementById('final-feedback').textContent = msg;
+        return;
+      }
+      const score = STATE.score;
+      if(score >= 70){
+        // victoria: mostrar mensaje narrativo del Guardián y evaluación
+        const narrative = `El Guardián, con voz antigua, dice: "Has demostrado comprensión y sensibilidad lingüística. Mi último deseo está cumplido. Lleva contigo el conocimiento."`;
+        const evaluation = evaluatePerformance(score);
+        document.getElementById('final-feedback').className = 'feedback correct';
+        document.getElementById('final-feedback').innerHTML = `${narrative}\n\nPuntuación final: ${score} puntos.\n\n${evaluation}`;
+      } else {
+        document.getElementById('final-feedback').className = 'feedback incorrect';
+        document.getElementById('final-feedback').textContent = `Has completado todas las salas, pero tu puntuación es ${score}. Necesitas al menos 70 puntos para escapar. Revisa las explicaciones en cada pregunta y vuelve a intentarlo.`;
+      }
+    });
+
+    function evaluatePerformance(score){
+      if(score >= 120) return "Desempeño: Excelente. Usa el subjuntivo con precisión en contextos de deseo, duda, emoción y finalidad.";
+      if(score >= 90) return "Desempeño: Muy bien. Tienes buen control; trabaja ahora la fluidez y la variedad del vocabulario.";
+      if(score >= 70) return "Desempeño: Aceptable. Comprendes las reglas; repasa errores concretos señalados en los feedbacks.";
+      return "Desempeño: Insuficiente. Practica más los contextos del subjuntivo.";
+    }
+
+    // Hook: personalizamos el comportamiento de evaluación para algunas preguntas sin input
+    // Para preguntas que son elección múltiple o d3, las llamadas a evaluate usan los valores apropiados.
+    // Aseguramos que al enviar el sf1 (tres formas) se procesen correctamente.
+    // Sobrescribimos el handler del submit del campo sf1:
+    document.querySelector('button[data-qid="sf1"]').addEventListener('click', ()=>{
+      const raw = document.getElementById('sf1-input').value;
+      // aceptar separadores comas o punto y coma
+      const parts = raw.split(/[;,]/).map(s=>normalize(s));
+      const expected = DATA.answers['sf1'];
+      ensureQuestion('sf1');
+      const qstate = STATE.questions['sf1'];
+      if(qstate.correct) { showFeedback('sf1','Ya respondido correctamente.',true); return; }
+      // comparar elemento por elemento (aceptamos que el usuario escriba formas con o sin pronombres)
+      const ok = expected.every((ans,i)=> normalize(parts[i] || '') === normalize(ans));
+      if(ok){
+        const points = qstate.attempts === 0 ? 10 : (qstate.attempts === 1 ? 5 : 0);
+        STATE.score += points;
+        qstate.correct = true;
+        showFeedback('sf1', `✅ Correcto. +${points} puntos.`, true);
+        updateUI();
+        checkRoomCompletion('sala-final');
+      } else {
+        qstate.attempts += 1;
+        STATE.score -= 2;
+        showFeedback('sf1', `❌ Incorrecto. -2 puntos. ${DATA.explanations['sf1']}`, false);
+        updateUI();
+      }
+    });
+
+    // Inicializar UI
+    updateUI();
+
+    /*************************************************************************
+     * FIN DEL SCRIPT PRINCIPAL
+     *
+     * Comentarios para el docente:
+     * - Para cambiar pistas: editar DATA.HINTS.
+     * - Para cambiar respuestas o explicaciones: editar DATA.answers y DATA.explanations.
+     * - Para añadir preguntas: añadir un bloque .question en la sala correspondiente con data-qid único
+     *   y manejar la lógica de lectura para inputs, choices o mecanismos especiales (drag&drop).
+     *************************************************************************/
   </script>
 </body>
 </html>
